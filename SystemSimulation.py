@@ -48,13 +48,13 @@ class SystemSimultion(object):
 
 
     def debug(self):
+        print("Pump running : "+str(self.waterPumpRunning)+"\n")
+        print("Fan running : "+str(self.gasFanRunning)+"\n")
         print("WATER level : "+str(self.H2O_level)+"\n")
         print("CO level : "+str(self.CO_level)+"\n")
         print("CH4 level : "+str(self.CH4_level)+"\n")
             
-
-
-def system_simulation(CH4_channel_out, CO_channel_out, H20_channel_out, waterpump_channel_in, fan_channel_in) :
+    def poll(self) :
     
-    print()
+        print()
     

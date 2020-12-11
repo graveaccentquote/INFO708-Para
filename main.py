@@ -6,27 +6,8 @@ Created on Fri Nov 20 09:15:22 2020
 """
 
 from multiprocessing import Process, Queue, Pipe
-import os
 from SystemSimulation import *
-
-def f(name):
-    info('process')
-    print ('hello', name)
-    
-def f2(arg):
-    arg.put("This message brought to you by a queue ")
-    
-def f3(arg):
-    #arg.send("This message brought to you via a 2-way pipe")
-    print(arg.recv())
-    arg.close()
-    
-def info(title):
-    print (title)
-    print ('module name:', __name__)
-    if hasattr(os, 'getppid'):  # only available on Unix
-        print ('parent process:', os.getppid())
-    print ('process id:', os.getpid())
+from testing import *
 
 if __name__ == '__main__':
     info('main line')

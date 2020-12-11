@@ -7,6 +7,7 @@ Created on Fri Nov 20 09:15:22 2020
 
 from multiprocessing import Process, Queue, Pipe
 import os
+from SystemSimulation import *
 
 def f(name):
     info('process')
@@ -19,11 +20,6 @@ def f3(arg):
     #arg.send("This message brought to you via a 2-way pipe")
     print(arg.recv())
     arg.close()
-
-def system_simulation(CH4_channel_out, CO_channel_out, H20_channel_out, waterpump_channel_in, fan_channel_in) :
-    #TODO
-    print()
-    
     
 def info(title):
     print (title)
@@ -48,9 +44,16 @@ if __name__ == '__main__':
     # p.join()
 
     ### Pipe
-    parent_conn, child_conn = Pipe()
-    p = Process(target=f3, args=(child_conn,))
-    p.start()
-    parent_conn.send("toto")
-    #print (parent_conn.recv()) 
-    p.join()
+    # parent_conn, child_conn = Pipe()
+    # p = Process(target=f3, args=(child_conn,))
+    # p.start()
+    # parent_conn.send("toto")
+    # #print (parent_conn.recv()) 
+    # p.join()
+
+    sim = SystemSimultion(0, 0, 0, 0, 0)
+
+    for i in range(1,50):
+        print(i)
+        sim.update()
+        sim.debug()

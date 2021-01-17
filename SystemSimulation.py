@@ -18,11 +18,14 @@ def startSimulation(CH4_sensor_channel_out,
     init() #for colorama
     
     for i in range(0, timeout):
+        print(i)
         sim.update()
         if i == 10:
-            sim.waterpump_channel_in.put("true")
+            sim.waterpump_channel_in.put(True)
         if i == 15:
-            sim.gasfan_channel_in.put("true")
+            sim.gasfan_channel_in.put(True)
+        if i == 17:
+            sim.gasfan_channel_in.put(False)
         
 class SystemSimultion(object):
 

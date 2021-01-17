@@ -5,36 +5,26 @@ Created on Fri Nov 20 09:15:22 2020
 @author: C Ost
 """
 
-from multiprocessing import Process, Queue, Pipe
-from SystemSimulation import *
-from testing import *
+from multiprocessing import Process, Queue
+from SystemSimulation import startSimulation
+#from testing import *
 
 if __name__ == '__main__':
-    info('main line')
+    #queues
+    CH4_sensor_channel_out = Queue()
+    CO_sensor_channel_out = Queue()
+    H2O_sensor_channel_out = Queue()
+    waterpump_channel_in = Queue()
+    gasfan_channel_in = Queue()
     
-    ###Hello world
-    # p = Process(target=f, args=('world',))
-    # p.start()
-    # p.join()
+  
+    simProcess = Process(target=startSimulation,
+                         args=(CH4_sensor_channel_out,
+                                 CO_sensor_channel_out,
+                                 H2O_sensor_channel_out,
+                                 waterpump_channel_in,
+                                 gasfan_channel_in,
+                                 20))
     
-    ### Queue
-    # q = Queue()
-    # p = Process(target=f2, args=(q,))
-    # p.start()
-    # print (q.get())
-    # p.join()
-
-    ### Pipe
-    # parent_conn, child_conn = Pipe()
-    # p = Process(target=f3, args=(child_conn,))
-    # p.start()
-    # parent_conn.send("toto")
-    # #print (parent_conn.recv()) 
-    # p.join()
-
-    sim = SystemSimultion(0, 0, 0, 0, 0)
-
-    for i in range(1,50):
-        print(i)
-        sim.update()
-        sim.debug()
+    
+    simProcess.start()

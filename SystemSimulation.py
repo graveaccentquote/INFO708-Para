@@ -1,73 +1,71 @@
+# -*- coding: utf-8 -*-
 import numpy.random
+
+from time import sleep
 
 from colorama import init, Fore, Back, Style
 
-def startSimulation(CH4_sensor_channel_out,
-                    CO_sensor_channel_out,
-                    H2O_sensor_channel_out,
-                    waterpump_channel_in,
-                    gasfan_channel_in,
+def startSimulation(CH4_sensor_channel,
+                    CO_sensor_channel,
+                    H2O_sensor_channel,
+                    waterpump_channel,
+                    gasfan_channel,
                     timeout):
     
-    sim = SystemSimultion(CH4_sensor_channel_out,
-                          CO_sensor_channel_out,
-                          H2O_sensor_channel_out,
-                          waterpump_channel_in,
-                          gasfan_channel_in)
+    sim = SystemSimultion(CH4_sensor_channel,
+                          CO_sensor_channel,
+                          H2O_sensor_channel,
+                          waterpump_channel,
+                          gasfan_channel)
     
     init() #for colorama
     
     for i in range(0, timeout):
-        print(i)
+        print("Iteration "+ str(i))
         sim.update()
-        if i == 10:
-            sim.waterpump_channel_in.put(True)
-        if i == 15:
-            sim.gasfan_channel_in.put(True)
-        if i == 17:
-            sim.gasfan_channel_in.put(False)
+        sleep(0.25)
         
 class SystemSimultion(object):
 
     #simulation variables
-    AVERAGE_H2O_DECREASE = float(5)
-    AVERAGE_H2O_INCREASE = float(2)
-    H2O_STD = float(1)
-    AVERAGE_GAS_DECREASE = float(3)
-    AVERAGE_GAS_INCREASE = float(1)
-    GAS_STD = float(1)
+    AVERAGE_H2O_DECREASE = 4.0
+    AVERAGE_H2O_INCREASE = 3.0
+    H2O_STD = 0.5
+    AVERAGE_GAS_DECREASE = 2.0
+    AVERAGE_GAS_INCREASE = 1.0
+    GAS_STD = 0.33
     
     def __init__(self,
-                 CH4_sensor_channel_out,
-                 CO_sensor_channel_out,
-                 H2O_sensor_channel_out,
-                 waterpump_channel_in,
-                 gasfan_channel_in):
+                 CH4_sensor_channel,
+                 CO_sensor_channel,
+                 H2O_sensor_channel,
+                 waterpump_channel,
+                 gasfan_channel):
         self.H2O_level = float(0)
         self.CH4_level = float(0)
         self.CO_level = float(0)
         self.waterPumpRunning = False
         self.gasFanRunning = False
 
-        self.CH4_sensor_channel_out = CH4_sensor_channel_out
-        self.CO_sensor_channel_out = CO_sensor_channel_out
-        self.H2O_sensor_channel_out = H2O_sensor_channel_out
-        self.waterpump_channel_in = waterpump_channel_in
-        self.gasfan_channel_in = gasfan_channel_in
+        self.CH4_sensor_channel = CH4_sensor_channel
+        self.CO_sensor_channel = CO_sensor_channel
+        self.H2O_sensor_channel = H2O_sensor_channel
+        self.waterpump_channel = waterpump_channel
+        self.gasfan_channel = gasfan_channel
 
     def update(self):
         #send updated values to other processes
         self.sendH2OValue()
-        self.sendCH4Value()
         self.sendCOValue()
+        self.sendCH4Value()
         
         #receive messages
         self.recvFanValue()
         self.recvPumpValue()
         
         #update internal values and print
-        self.updateInternalValues()
         self.debug()
+        self.updateInternalValues()
 
     def updateInternalValues(self):
         #water update
@@ -83,6 +81,11 @@ class SystemSimultion(object):
         else:
             self.CH4_level -= numpy.random.normal(self.AVERAGE_GAS_DECREASE, self.GAS_STD)
             self.CO_level  -= numpy.random.normal(self.AVERAGE_GAS_DECREASE, self.GAS_STD)
+            
+            
+        self.H2O_level = max(0, self.H2O_level)
+        self.CH4_level = max(0, self.CH4_level)
+        self.CO_level = max(0, self.CO_level)
 
 
     def debug(self):
@@ -106,22 +109,26 @@ class SystemSimultion(object):
         
         
     def sendH2OValue(self):
-        self.H2O_sensor_channel_out.put(self.H2O_level)
+        self.H2O_sensor_channel.put(self.H2O_level)
     
     def sendCH4Value(self):
-        self.CH4_sensor_channel_out.put(self.CH4_level)
+        if not self.CH4_sensor_channel.empty():
+            self.CH4_sensor_channel.get()
+        self.CH4_sensor_channel.put(self.CH4_level)
     
     def sendCOValue(self):
-        self.CO_sensor_channel_out.put(self.CO_level)
+        if not self.CO_sensor_channel.empty():
+            self.CO_sensor_channel.get()
+        self.CO_sensor_channel.put(self.CO_level)
         
     def recvFanValue(self):
-        if not self.gasfan_channel_in.empty():
-            msg = self.gasfan_channel_in.get()
+        if not self.gasfan_channel.empty():
+            msg = self.gasfan_channel.get()
             self.gasFanRunning = msg
         
     def recvPumpValue(self):
-        if not self.waterpump_channel_in.empty():
-            msg = self.waterpump_channel_in.get()
+        if not self.waterpump_channel.empty():
+            msg = self.waterpump_channel.get()
             self.waterPumpRunning = msg;
     
     
